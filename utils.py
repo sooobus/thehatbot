@@ -66,3 +66,14 @@ def add_first_type_review(word, value, uid):
         print("Added goodness mark")
     else:
         print("Something went wrong with the goodness mark")
+        
+def add_second_type_review(word, value, uid):
+    if word in word_evs:
+        word_evs[word] = word_evs[word] + [uid]
+    else:
+        word_evs[word] = [uid]
+
+    if on_review.add_mark(word, value):
+        print("Added complexity mark")
+    else:
+        print("Something went wrong with the complexity mark")

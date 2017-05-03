@@ -27,16 +27,24 @@ def choose_review_type(message):
 @bot.message_handler(regexp="Проверять, подходят ли новые слова")
 def handle_first_level_review_query(message):
     bot.send_message(message.chat.id, "Вы выбрали проверку качества слов. Сейчас вам будут присылаться слова. Ваша задача -- оценить, насколько каждое слово подходит для Шляпы.")
-
     first_type_eval[message.chat.id] = utils.make_not_checked_words_pack(10, message.chat.id)
     if len(first_type_eval[message.chat.id]) > 0:
         first_type_eval_last[message.chat.id] = first_type_eval[message.chat.id].pop() 
         bot.send_message(message.chat.id,  first_type_eval_last[message.chat.id], reply_markup=utils.make_first_type_review_keyboard())
     else:
         bot.send_message(message.chat.id, "Слова для проверки закончились! Спасибо!")
+
+
 @bot.message_handler(regexp="Оценивать слова")
 def handle_second_level_review_query(message):
     bot.send_message(message.chat.id, "Вы выбрали оценку слов. Сейчас вам будут присылаться слова. Ваша задача -- оценить сложность слова. Если вы видите, что слово явно для шляпы плохое, напишите Валерии Немычниковой. Напоминаем критерии: " + texts.criteria_eval)
+    second_type_eval[message.chat.id] = utils.make_not_eval_words_pack(10, message.chat.id)
+    if len(second_type_eval[message.chat.id]) > 0:
+        second_type_eval_last[message.chat.id] = second_type_eval[message.chat.id].pop() 
+        bot.send_message(message.chat.id,  second_type_eval_last[message.chat.id], reply_markup=utils.make_second_type_review_keyboard())
+    else:
+        bot.send_message(message.chat.id, "Слова для проверки закончились! Спасибо!")
+
 
 @bot.message_handler(regexp='(Это хорошее слово для Шляпы|Это слово плохо подходит для Шляпы|Это слово совсем не подходит для Шляпы)')
 def handle_second_type_review_query(message):
@@ -46,6 +54,17 @@ def handle_second_type_review_query(message):
     if message.chat.id in first_type_eval and len(first_type_eval[message.chat.id]) > 0:
         first_type_eval_last[message.chat.id] = first_type_eval[message.chat.id].pop() 
         bot.send_message(message.chat.id,  first_type_eval_last[message.chat.id], reply_markup=utils.make_first_type_review_keyboard()) 
+    else:
+        bot.send_message(message.chat.id,  "Слова закончились! Спасибо за помощь!") 
+
+@bot.message_handler(regexp='(0|1|2|3|4)')
+def handle_second_type_review_query(message):
+    mark = int(message.text) 
+    if message.chat.id in second_type_eval_last:
+        utils.add_second_type_review(second_type_eval_last[message.chat.id], mark, message.chat.id)
+    if message.chat.id in second_type_eval and len(second_type_eval[message.chat.id]) > 0:
+        second_type_eval_last[message.chat.id] = second_type_eval[message.chat.id].pop() 
+        bot.send_message(message.chat.id,  second_type_eval_last[message.chat.id], reply_markup=utils.make_second_type_review_keyboard()) 
     else:
         bot.send_message(message.chat.id,  "Слова закончились! Спасибо за помощь!") 
 

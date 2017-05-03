@@ -89,12 +89,16 @@ class Reviewer(object): #this class is used to interact with not yet evaluated w
     def transit_good(self): 
         for word in self.new_words:
             if self.new_words[word]["cnt"] == 3 and self.new_words[word]["good"] < 3:
+                print(word)
                 self.add_good_word(word)
 
     def add_mark(self, word, mark):
         if word in self.storage and 0 <= mark <= 12 and len(self.storage[word]) < 3:
             self.storage[word] = self.storage[word] + [ mark ]
             print(self.storage[word])
+            return True
+        else:
+            return False
 
     def show_marks(self, word):
         if word in self.storage:
@@ -116,3 +120,9 @@ class Reviewer(object): #this class is used to interact with not yet evaluated w
 
     def get_not_evaluated(self, size):
         return [word for word in self.storage if len(self.storage[word]) < 3][:size]
+
+    def get_all_on_goodness_review(self):
+        return list(self.new_words)
+    
+    def get_all_on_complexity_review(self):
+        return list(self.storage)
