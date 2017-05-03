@@ -1,21 +1,28 @@
 import words
-import config
 
-playable = words.WordsStorage(config.playable_storage_filename)
-review = words.Reviewer(config.unreviewed_storage_filename)
+playable = words.WordsStorage("playable_words")
 
 
-#for i in range(3, 12):
-#    playable.add_from_csv("words" + str(i) + ".csv")
-playable.show_stats()
-playable.clear_storage()
-playable.show_stats()
+reviewer = words.Reviewer("on_review", "new_words")
+print(playable.check_complexity("выборка"))
+print(playable.check_complexity("выборка"))
+reviewer.show_marks("выборка")
+reviewer.show_goodness_marks("выборка")
+reviewer.add_mark("выборка", 2)
+reviewer.add_mark("выборка", 2)
+reviewer.add_mark("выборка", 2)
+reviewer.show_marks("выборка")
+reviewer.transit_evaluated(playable)
+print(playable.check_complexity("выборка"))
 
-playable.add_from_csv("words.csv")
-for i in range(3, 13):
-    print(i)
-    playable.add_from_csv("words" + str(i) + ".csv")
+#reviewer.add_mark("фибрилляция", 3)
+#reviewer.add_mark("фибрилляция", 2)
+#reviewer.show_marks("фибрилляция")
+#reviewer.transit_evaluated(playable)
+#print(playable.check_complexity("фибрилляция"))
+#reviewer.add_mark("фибрилляция", 3)
+#reviewer.transit_evaluated(playable)
+#print(playable.check_complexity("фибрилляция"))
 
-print(playable.check_complexity('шимоза'))
 
-print(playable.take_hat(30, 0.8, 0.9))
+#print(playable.take_hat(100, 0.6, 0.7))

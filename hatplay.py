@@ -22,6 +22,12 @@ class Circle(object):
 
 #на каждом круге обновляем список партнёров
     def individual_play(self):
+        def check_status():
+            ans = input()
+            if ans == '+':
+                return True
+            else:
+                return False
 
         explained = {}
         def add_explained(word, time, finished):
@@ -50,9 +56,10 @@ class Circle(object):
                     print(word)
             print("Время!")
             sleep(3)
-                if check_status():
-                    cnt += 1
-                    add_explained(word, time.clock() - pre)
+            if check_status():
+                cnt += 1
+                add_explained(word, time.clock() - pre)
+            print("Стоп")
             return cnt
 #TODO апель
         players_num = len(self.players)
@@ -74,4 +81,5 @@ class Circle(object):
                 if shift == 0:
                     shift += 1
 
-#game = Circle(circle_limit=10
+        return count, explained
+

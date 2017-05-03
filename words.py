@@ -33,6 +33,8 @@ class WordsStorage(object): #this class is used to interact with the storage of 
             self.add_word(word, np.mean(np.array(words[words['word'] == word]['complexity'].values)))
 
     def check_complexity(self, word):
+        if word not in self.storage:
+            return None
         return self.storage[word]['complexity']
 
     def add_time(self, word, time):
@@ -45,7 +47,7 @@ class WordsStorage(object): #this class is used to interact with the storage of 
             l = min(10, len(time))
             self.storage[word]['complexity'] = self.storage[word]['human'] * (1 - 0.1 * l) + normal_time * (0.1 * l)
 
-    def take_hat(self, size, complexity_lower, complexity_upper):
+    def take_hat(self, size, complexity_lower=0.0, complexity_upper=1.1):
         #for smth in self.storage:
         #    print((self.storage[smth]['complexity']))
         hat = [word for word in self.storage if complexity_lower <= self.storage[word]['complexity'] < complexity_upper]
@@ -55,22 +57,62 @@ class WordsStorage(object): #this class is used to interact with the storage of 
             return random.shuffle(hat)
 
 class Reviewer(object): #this class is used to interact with not yet evaluated words
-    def __init__(self, filename):
+    def __init__(self, filename, filename_new_words):
         self.storage = shelve.open(filename)
+        self.new_words = shelve.open(filename_new_words)
 
     def __exit__(self):
         self.storage.close()
 
-    def add_word(word, playable_storage): # storage stores pairs (word, list), where list contains all the marks for the word
-        if word not in self.storage and not playable_storage.has_word():
-            self.storage[word] = {}
+    def clear_storage(self):
+        self.storage.clear()
 
-    def add_mark(word, mark):
-        if word in self.storage and 0 <= mark <= 12 and len(self.storage) < 3:
-            self.storage[word].append(mark)
+    def add_word(self, word, playable_storage):
+        if (word not in self.new_words) and (word not in self.storage) and (not playable_storage.has_word(word)):
+            self.new_words[word] = {"good": 0, "cnt": 0}
+            return True
+        else:
+            return False
 
-    def transit_evaluated(playable_storage): #moves words with 3 marks to playable
+
+    def add_goodness_mark(self, word, mark):
+        if word in self.new_words and 0 <= mark <= 2 and self.new_words[word]["cnt"] < 3:
+            self.new_words[word] = {"good": self.new_words[word]["good"] + mark, "cnt": self.new_words[word]["cnt"] + 1}  
+            return True
+        else:
+            return False
+
+    def add_good_word(self, word): # storage stores pairs (word, list), where list contains all the marks for the word
+        if word not in self.storage:
+           self.storage[word] = []
+
+    def transit_good(self): 
+        for word in self.new_words:
+            if self.new_words[word]["cnt"] == 3 and self.new_words[word]["good"] < 3:
+                self.add_good_word(word)
+
+    def add_mark(self, word, mark):
+        if word in self.storage and 0 <= mark <= 12 and len(self.storage[word]) < 3:
+            self.storage[word] = self.storage[word] + [ mark ]
+            print(self.storage[word])
+
+    def show_marks(self, word):
+        if word in self.storage:
+            print(self.storage[word])
+
+    def show_goodness_marks(self, word):
+        if word in self.new_words:
+            print(self.new_words[word])
+
+    def transit_evaluated(self, playable_storage): #moves words with 3 marks to playable
         for word in self.storage:
             if len(self.storage[word]) == 3:
                 complexity = sum(self.storage[word])
                 playable_storage.add_word(word, complexity)
+                del self.storage[word]
+
+    def get_not_checked(self, size):
+        return [word for word in self.new_words if self.new_words[word]["cnt"] < 3][:size]
+
+    def get_not_evaluated(self, size):
+        return [word for word in self.storage if len(self.storage[word]) < 3][:size]
