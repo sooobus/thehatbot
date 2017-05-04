@@ -3,6 +3,8 @@ import telebot
 import utils
 import texts
 from collections import deque
+import hatplay
+import words
 
 bot = telebot.TeleBot(config.token)
 wait_for_word = {}
@@ -10,7 +12,20 @@ first_type_eval = {}
 second_type_eval = {}
 first_type_eval_last = {}
 second_type_eval_last = {}
+wait_for_players_num = {}
+status = {}
 
+def check_status(uid):
+    if uid in status and status[uid]:
+        status[uid] = False
+        return True
+    else:
+        return False
+
+@bot.message_handler(commands=["play"])
+def handle_game_init(message): 
+    bot.send_message(message.chat.id, "Выберите тип игры", reply_markup=utils.make_play_choice_keyboard())
+ 
 @bot.message_handler(commands=["review"])
 def choose_review_type(message): 
     if utils.check_if_user_can_review(message.chat.id):
@@ -57,18 +72,54 @@ def handle_second_type_review_query(message):
     else:
         bot.send_message(message.chat.id,  "Слова закончились! Спасибо за помощь!") 
 
-@bot.message_handler(regexp='(0|1|2|3|4)')
-def handle_second_type_review_query(message):
-    mark = int(message.text) 
-    if message.chat.id in second_type_eval_last:
-        utils.add_second_type_review(second_type_eval_last[message.chat.id], mark, message.chat.id)
-    if message.chat.id in second_type_eval and len(second_type_eval[message.chat.id]) > 0:
-        second_type_eval_last[message.chat.id] = second_type_eval[message.chat.id].pop() 
-        bot.send_message(message.chat.id,  second_type_eval_last[message.chat.id], reply_markup=utils.make_second_type_review_keyboard()) 
+@bot.message_handler(regexp='Угадано')
+def guessed(message):
+    if message.chat.id in status:
+        status[message.chat.id] = True
     else:
-        bot.send_message(message.chat.id,  "Слова закончились! Спасибо за помощь!") 
+        print("something went wrong on guessed")
 
+@bot.message_handler(regexp='(0|1|2|3|4){1}')
+def handle_second_type_review_query(message):
+    ii = 0
+    while(ii < 1): #try:
+        ii += 1
+        if message.chat.id in wait_for_players_num and wait_for_players_num[message.chat.id]:
+            print("goto other method")
+            handle_number_of_players_query(message)
+        else:
+            mark = int(message.text) 
+            if message.chat.id in second_type_eval_last:
+                utils.add_second_type_review(second_type_eval_last[message.chat.id], mark, message.chat.id)
+            if message.chat.id in second_type_eval and len(second_type_eval[message.chat.id]) > 0:
+                second_type_eval_last[message.chat.id] = second_type_eval[message.chat.id].pop() 
+                bot.send_message(message.chat.id,  second_type_eval_last[message.chat.id], reply_markup=utils.make_second_type_review_keyboard()) 
+            else:
+                bot.send_message(message.chat.id,  "Слова закончились! Спасибо за помощь!") 
+    #except:
+    #    print("Something went wrong in handle_second_type_review_query")
 
+@bot.message_handler(regexp='(0|1|2|3|4|5|6|7|8|9|10|11|12){1}')
+def handle_number_of_players_query(message):
+    if  message.chat.id in wait_for_players_num and wait_for_players_num[message.chat.id]:
+        print("we will try")
+        num, players = utils.parse_players_and_num(message.text)
+        print(num, players)
+        w_storage =  words.WordsStorage(config.playable_storage_filename)
+        game = hatplay.Circle(num, w_storage, players_names=players)
+        game.show()
+        status[message.chat.id] = False
+        game.individual_play(check_status, message.chat.id, bot.send_message, utils.make_guesser_keyboard(), utils.make_transit_keyboard())
+        del status[message.chat.id]
+        wait_for_players_num[message.chat.id] = False
+
+@bot.message_handler(regexp='(Личная игра|Парная игра)')
+def handle_game_type(message):
+    print("handle game type")
+    bot.send_message(message.chat.id, "Введите количество игроков (от 1 до 12) и, если хотите, их имена через запятую. \n Например, \n 3 \n Винтик, Шпунтик, Незнайка")
+    wait_for_players_num[message.chat.id] = True
+ 
+ 
 @bot.message_handler(content_types=['text'])
 def handle_word(message):
     if(message.chat.id in wait_for_word and wait_for_word[message.chat.id]):

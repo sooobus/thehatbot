@@ -34,12 +34,45 @@ def make_second_type_review_keyboard():
     markup.row('2', '3', '4')
     return markup
 
+def make_review_choice_keyboard():
+   #884253 209725
+    markup = types.ReplyKeyboardMarkup()
+    markup.row('Проверять, подходят ли новые слова')
+    markup.row('Оценивать слова')
+    return markup
+
+def make_play_choice_keyboard():
+    markup = types.ReplyKeyboardMarkup()
+    markup.row('Личная игра')
+    markup.row('Парная игра')
+    return markup
+
+def make_guesser_keyboard():
+    markup = types.ReplyKeyboardMarkup()
+    markup.row('Угадано')
+    markup.row('Ошибка')
+    return markup
+
+def make_transit_keyboard():
+    markup = types.ReplyKeyboardMarkup()
+    markup.row('Последнее слово угадано', 'не угадано')
+    markup.row('Ошибка во время объяснения')
+    return markup
+
 def make_not_checked_words_pack(size, uid):
     words = on_review.get_not_checked(size) 
     for word in words:
         if word not in word_revs:
             word_revs[word] = []
     return deque([word for word in words if uid not in word_revs[word]])
+
+def parse_players_and_num(text):
+    num = text.split(" ")[0]
+    if "," in text:
+        players = text[len(num):].split(", ")
+    else:
+        players = []
+    return int(num), players
 
 def make_not_eval_words_pack(size, uid):
     words = on_review.get_not_evaluated(size) 
