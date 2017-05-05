@@ -14,6 +14,7 @@ first_type_eval_last = {}
 second_type_eval_last = {}
 wait_for_players_num = {}
 status = {}
+game_type = {}
 
 def check_status(uid):
     if uid in status and status[uid]:
@@ -106,19 +107,26 @@ def handle_number_of_players_query(message):
         num, players = utils.parse_players_and_num(message.text)
         print(num, players)
         w_storage =  words.WordsStorage(config.playable_storage_filename)
-        game = hatplay.Circle(num, w_storage, players_names=players)
+        game = hatplay.Circle(players_number=num, words_storage=w_storage, sender=bot.send_message, uid=message.chat.id, keyboard=utils.make_guesser_keyboard(), transit_keyboard=utils.make_transit_keyboard(), check_status=check_status, is_pair=game_type[message.chat.id], players_names=players)
         game.show()
         status[message.chat.id] = False
-        game.individual_play(check_status, message.chat.id, bot.send_message, utils.make_guesser_keyboard(), utils.make_transit_keyboard())
+        game.individual_play()
         del status[message.chat.id]
         wait_for_players_num[message.chat.id] = False
 
 @bot.message_handler(regexp='(Личная игра|Парная игра)')
 def handle_game_type(message):
     print("handle game type")
-    bot.send_message(message.chat.id, "Введите количество игроков (от 1 до 12) и, если хотите, их имена через запятую. \n Например, \n 3 \n Винтик, Шпунтик, Незнайка")
+    bot.send_message(message.chat.id, "Введите количество игроков (от 1 до 12) и, если хотите, их имена через запятую. \n Например, \n 3 Винтик, Шпунтик, Незнайка")
+    if message.text == "Личная игра":
+        game_type[message.chat.id] = False
+    else:
+        game_type[message.chat.id] = True
     wait_for_players_num[message.chat.id] = True
  
+@bot.message_handler(regexp='(Следующий ход|Ошибка во время хода)')
+def handle_game_type(message):
+    pass    
  
 @bot.message_handler(content_types=['text'])
 def handle_word(message):

@@ -55,8 +55,8 @@ def make_guesser_keyboard():
 
 def make_transit_keyboard():
     markup = types.ReplyKeyboardMarkup()
-    markup.row('Последнее слово угадано', 'не угадано')
-    markup.row('Ошибка во время объяснения')
+    markup.row('Следующий ход')
+    markup.row('Ошибка во время хода')
     return markup
 
 def make_not_checked_words_pack(size, uid):
