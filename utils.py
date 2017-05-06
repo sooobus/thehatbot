@@ -6,9 +6,15 @@ import shelve
 
 word_revs = shelve.open("words_reviewers")
 word_evs = shelve.open("words_evaluators")
+
 to_play = words.WordsStorage(config.playable_storage_filename)
 on_review = words.Reviewer(config.unreviewed_storage_filename,
                            config.new_words_storage_filename)
+
+def send_sad_message(f, uid):
+    sad_text = "Что-то пошло не так :( Если вы нашли \
+        баг, сообщите о нём: /bugreport. Иначе можно /start"
+    f(uid, sad_text, reply_markup=types.ReplyKeyboardRemove())
 
 
 def check_if_user_can_review(uid):
@@ -79,10 +85,12 @@ def make_transit_keyboard():
 
 
 def make_not_checked_words_pack(size, uid):
+    print(list(word_revs.keys()))
     words = on_review.get_not_checked(size)
     for word in words:
         if word not in word_revs:
-            word_revs[word] = []
+            word_revs[word] = ()
+            print("WORD", word)
     return deque([word for word in words if uid not in word_revs[word]])
 
 
@@ -96,10 +104,11 @@ def parse_players_and_num(text):
 
 
 def make_not_eval_words_pack(size, uid):
+    print("uid:", uid)
     words = on_review.get_not_evaluated(size)
     for word in words:
         if word not in word_evs:
-            word_evs[word] = []
+            word_evs[word] = ()
     return deque([word for word in words if uid not in word_evs[word]])
 
 
@@ -114,10 +123,8 @@ def add_new_word(word):
 
 
 def add_first_type_review(word, value, uid):
-    if word in word_revs:
-        word_revs[word] = word_revs[word] + [uid]
-    else:
-        word_revs[word] = [uid]
+    global word_revs
+    word_revs[word] = word_revs[word] + (uid,)
 
     if on_review.add_goodness_mark(word, value):
         print("Added goodness mark")
@@ -126,10 +133,7 @@ def add_first_type_review(word, value, uid):
 
 
 def add_second_type_review(word, value, uid):
-    if word in word_evs:
-        word_evs[word] = word_evs[word] + [uid]
-    else:
-        word_evs[word] = [uid]
+    word_evs[word] = word_evs[word] + (uid,)
 
     if on_review.add_mark(word, value):
         print("Added complexity mark")

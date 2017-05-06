@@ -86,10 +86,9 @@ class Circle(object):
         word = self.hat.pop()
         t0 = time.time()
         pre = time.time()
-        print("t0", str(t0))
         cnt = 0
         self.sender(self.uid, word, reply_markup=self.keyboard)
-        got_error = False
+        caught_error = False
         while(time.time() - t0 < 20.0):
             time.sleep(0.5)
             # print(check_status(uid))
