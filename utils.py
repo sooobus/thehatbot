@@ -79,7 +79,7 @@ def make_guesser_keyboard():
 def make_transit_keyboard():
     markup = types.ReplyKeyboardMarkup()
     markup.row('Следующий ход')
-    markup.row('Ошибка во время хода')
+#    markup.row('Ошибка во время хода')
     markup.row('Закончить игру')
     return markup
 
