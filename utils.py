@@ -83,6 +83,14 @@ def make_transit_keyboard():
     markup.row('Закончить игру')
     return markup
 
+def parse_players_and_num(text):
+    num = text.split(" ")[0]
+    if "," in text:
+        players = text[len(num):].split(", ")
+    else:
+        players = []
+    return int(num), players
+
 
 def make_not_checked_words_pack(size, uid):
     print(list(word_revs.keys()))
@@ -92,15 +100,6 @@ def make_not_checked_words_pack(size, uid):
             word_revs[word] = ()
             print("WORD", word)
     return deque([word for word in words if uid not in word_revs[word]])
-
-
-def parse_players_and_num(text):
-    num = text.split(" ")[0]
-    if "," in text:
-        players = text[len(num):].split(", ")
-    else:
-        players = []
-    return int(num), players
 
 
 def make_not_eval_words_pack(size, uid):

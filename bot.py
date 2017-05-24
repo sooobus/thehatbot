@@ -75,9 +75,9 @@ def choose_review_type(message):
         else:
             config.logger.info(str(message.chat.id) + " > review disapproved")
             bot.send_message(message.chat.id,
-                            """К сожалению, у вас нет прав редактора.
-                            Их можно получить, написав на почту
-                            sooobus@gmail.com.""",
+                            "К сожалению, у вас нет прав редактора. \
+                            Их можно получить, написав на почту \
+                            sooobus@gmail.com.",
                             reply_markup=telebot.types.ReplyKeyboardRemove())
     except:
         config.logger.error(str(message.chat.id) + " > crashed on review")
@@ -146,9 +146,7 @@ def handle_second_level_review_query(message):
         utils.send_sad_message(bot.send_message, message.chat.id)
 
 
-@bot.message_handler(regexp="""(Это хорошее слово для Шляпы|
-                            Это слово плохо подходит для Шляпы|
-                            Это слово совсем не подходит для Шляпы)""")
+@bot.message_handler(regexp="""(Это хорошее слово для Шляпы|Это слово плохо подходит для Шляпы|Это слово совсем не подходит для Шляпы)""")
 def handle_second_type_review_query(message):
     try:
         config.logger.info(str(message.chat.id) + " > review words level 2 query")
